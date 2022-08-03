@@ -1,6 +1,7 @@
 import 'dart:ffi';
 
 import 'package:bill_split/Bill.dart';
+import 'package:bill_split/BillDatabase.dart';
 import 'package:bill_split/Person.dart';
 import 'package:bill_split/ResultWidget.dart';
 import 'package:flutter/cupertino.dart';
@@ -27,11 +28,16 @@ class _PeopleWidgetState extends State<PeopleWidget> {
   }
 
   void addPerson(){
-    setState((){
-      widget.bill.people.add(Person(textEditingController.value.text, 0));
-    });
+    persistPerson(Person(textEditingController.value.text, 0));
     textEditingController.clear();
     Navigator.pop(context);
+  }
+
+  void persistPerson(Person person) async {
+    person = await BillDatabase.billDatabase.addPerson(person, widget.bill);
+    setState(() {
+      widget.bill.people.add(person);
+    });
   }
 
   Future<void> _displayPersonNameInputDialog() async {
@@ -60,7 +66,9 @@ class _PeopleWidgetState extends State<PeopleWidget> {
 
   void addMoney(Person person){
     setState((){
-      person.cent += (double.parse(textEditingController.value.text) * 100).floor();
+      int toAdd = (double.parse(textEditingController.value.text) * 100).floor();
+      person.cent += toAdd;
+      BillDatabase.billDatabase.updatePerson(person, widget.bill);
     });
     textEditingController.clear();
     Navigator.pop(context);

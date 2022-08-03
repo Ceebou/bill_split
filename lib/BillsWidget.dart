@@ -1,3 +1,4 @@
+import 'package:bill_split/BillDatabase.dart';
 import 'package:bill_split/PeopleWidget.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +11,7 @@ class BillsWidget extends StatefulWidget {
 
   @override
   State<BillsWidget> createState() => _BillsWidgetState();
+
 }
 
 class _BillsWidgetState extends State<BillsWidget> {
@@ -18,24 +20,33 @@ class _BillsWidgetState extends State<BillsWidget> {
   String inputText = "";
   late TextEditingController textEditingController;
 
-
-  _BillsWidgetState(){
-    bills = []; //TODO load bills
-  }
-
-
   @override
   void initState() {
     super.initState();
     textEditingController = TextEditingController();
+    bills = [];
+    loadBills();
   }
 
-  void addBill(){
+  void loadBills() async {
+    List<Bill> temp = await BillDatabase.billDatabase.getBills();
     setState(() {
-      bills.add(Bill(textEditingController.value.text));
+      bills = temp;
     });
+  }
+
+  void addBill() {
+    Bill bill = Bill(textEditingController.value.text);
+    persistBill(bill);
     textEditingController.clear();
     Navigator.pop(context);
+  }
+
+  void persistBill(Bill bill) async {
+    bill = await BillDatabase.billDatabase.addBill(bill);
+    setState(() {
+      bills.add(bill);
+    });
   }
 
 
@@ -65,6 +76,7 @@ class _BillsWidgetState extends State<BillsWidget> {
   void deleteBill(Bill bill){
     setState((){
       bills.remove(bill);
+      BillDatabase.billDatabase.removeBill(bill);
     });
   }
 
