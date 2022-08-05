@@ -15,18 +15,26 @@ class MyApp extends StatelessWidget {
 
 
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
-        primarySwatch: Colors.blue,
+      title: 'Bill Split',
+      theme: ThemeData.dark().copyWith(
+        colorScheme: Theme.of(context).colorScheme.copyWith(
+          primary: const Color(0xffffa305),
+          onPrimary: const Color(0xff212121),
+          secondary: const Color(0xff9E9E9E),
+          onSecondary: const Color(0xff757575),
+          tertiary: const Color(0xffBDBDBD),
+          background: const Color(0xff212121),
+        ),
+        floatingActionButtonTheme: Theme.of(context).floatingActionButtonTheme.copyWith(
+          backgroundColor: const Color(0xffffa305),
+          foregroundColor: const Color(0xff212121),
+        ),
+        brightness: Brightness.light,
+        appBarTheme: Theme.of(context).appBarTheme.copyWith(
+          iconTheme: Theme.of(context).iconTheme.copyWith(
+            color: const Color(0xff212121),
+          )
+        )
       ),
       home: const BillsWidget(),
     );

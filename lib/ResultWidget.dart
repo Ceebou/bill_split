@@ -17,7 +17,7 @@ class ResultWidget extends StatelessWidget {
       appBar: AppBar(
         leading: TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Icon(Icons.arrow_back, color: Colors.white,),
+          child: const Icon(Icons.arrow_back, color: Color(0xff212121)),
         ),
         title: const Text("Payout"),
       ),
@@ -27,13 +27,19 @@ class ResultWidget extends StatelessWidget {
             title: Row(
               children: [
                 Text(payment.from.name),
-                Column(
-                  children: payment.amounts.map((amount) => Row(
-                    children: [
-                      Text(amount.person.name),
-                      Text(amount.value.toString()),
-                    ],
-                  )).toList(),
+                const SizedBox(width: 5,),
+                const Icon(Icons.arrow_right_alt_sharp),
+                const SizedBox(width: 5,),
+                Expanded(
+                  child: Column(
+                    children: payment.amounts.map((amount) => Row(
+                      children: [
+                        Text(amount.person.name),
+                        const Spacer(),
+                        Align(alignment: Alignment.topRight,child: Text((amount.value / 100).toStringAsFixed(2)),),
+                      ],
+                    )).toList(),
+                  ),
                 )
               ],
             ),
@@ -45,13 +51,6 @@ class ResultWidget extends StatelessWidget {
 
   List<PersonPayments> calculateResult(){
     // calculate starting values, set up map
-    /*Map<String, int> currentMoney = {};
-    int sum = 0;
-    for (Person element in bill.people) {
-      currentMoney.putIfAbsent(element.name, () => element.cent);
-      sum += element.cent;
-    }*/
-
     int sum = bill.people.map((e) => e.cent).fold<int>(0, (previousValue, element) => previousValue + element);
     double average = sum / bill.people.length;
     

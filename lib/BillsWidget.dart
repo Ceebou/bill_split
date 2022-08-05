@@ -90,12 +90,11 @@ class _BillsWidgetState extends State<BillsWidget> {
         children: bills.map((e) =>
             Card(
               child: ListTile(
-                tileColor: Colors.lightGreen,
                 title: Text(e.name),
                 onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => PeopleWidget(bill: e))),
                 trailing: TextButton(
                   onPressed: () => {deleteBill(e)},
-                  child: const Icon(Icons.delete, color: Colors.white,),
+                  child: const Icon(Icons.delete),
                 ),
               ),
             )

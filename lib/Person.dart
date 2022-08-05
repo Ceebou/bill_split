@@ -21,4 +21,8 @@ class Person {
   static Person fromMap(Map<String, dynamic> map){
     return Person.all(map["id"], map["name"], map["cent"]);
   }
+
+  String centToString(){
+    return (cent / 100).toStringAsFixed(2);
+  }
 }
