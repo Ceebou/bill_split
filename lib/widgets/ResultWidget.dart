@@ -1,8 +1,9 @@
+import 'package:bill_split/widgets/SummaryCard.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import 'Bill.dart';
-import 'Person.dart';
+import '../objects/Bill.dart';
+import '../objects/Person.dart';
 
 class ResultWidget extends StatelessWidget {
   final Bill bill;
@@ -22,29 +23,44 @@ class ResultWidget extends StatelessWidget {
         title: const Text("Payout"),
       ),
       body: ListView(
-        children: payments.map((payment) => Card(
-          child: ListTile(
-            title: Row(
-              children: [
-                Text(payment.from.name),
-                const SizedBox(width: 5,),
-                const Icon(Icons.arrow_right_alt_sharp),
-                const SizedBox(width: 5,),
-                Expanded(
-                  child: Column(
-                    children: payment.amounts.map((amount) => Row(
-                      children: [
-                        Text(amount.person.name),
-                        const Spacer(),
-                        Align(alignment: Alignment.topRight,child: Text((amount.value / 100).toStringAsFixed(2)),),
-                      ],
-                    )).toList(),
-                  ),
-                )
-              ],
-            ),
-          ),
-        )).toList(),
+        children: getListWidgets(),
+      ),
+    );
+  }
+
+  List<Widget> getListWidgets(){
+    List<Widget> summary = [SummaryCard(sum: bill.getSum(), average: bill.getAverage()), const Divider(thickness: 2, color: Colors.amber,)];
+    List<Widget> payments = getPaymentWidgets();
+    return summary + payments;
+  }
+
+  List<Widget> getPaymentWidgets(){
+    List<PersonPayments> payments = calculateResult();
+    return payments.map((e) => paymentToCard(e)).toList();
+  }
+
+  Widget paymentToCard(PersonPayments payment){
+    return Card(
+      child: ListTile(
+        title: Row(
+          children: [
+            Text(payment.from.name),
+            const SizedBox(width: 5,),
+            const Icon(Icons.arrow_right_alt_sharp, color: Color(0xff757575)),
+            const SizedBox(width: 5,),
+            Expanded(
+              child: Column(
+                children: payment.amounts.map((amount) => Row(
+                  children: [
+                    Text(amount.person.name),
+                    const Spacer(),
+                    Align(alignment: Alignment.topRight,child: Text((amount.value / 100).toStringAsFixed(2)),),
+                  ],
+                )).toList(),
+              ),
+            )
+          ],
+        ),
       ),
     );
   }

@@ -1,4 +1,4 @@
-import 'package:bill_split/Bill.dart';
+import 'package:bill_split/objects/Bill.dart';
 
 class Person {
   int? id;

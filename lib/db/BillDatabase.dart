@@ -1,5 +1,5 @@
-import 'package:bill_split/Bill.dart';
-import 'package:bill_split/Person.dart';
+import 'package:bill_split/objects/Bill.dart';
+import 'package:bill_split/objects/Person.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:flutter/material.dart';
@@ -29,7 +29,7 @@ class BillDatabase {
 
         );
         return db.execute(
-            'CREATE TABLE people(id INTEGER PRIMARY KEY, name TEXT, cent INTEGER, bill INTEGER, FOREIGN KEY(bill) REFERENCES bill(id));'
+            'CREATE TABLE people(id INTEGER PRIMARY KEY, name TEXT, cent INTEGER, bill INTEGER, FOREIGN KEY(bill) REFERENCES bill(id) ON DELETE CASCADE);'
         );
       },
       version: 1,

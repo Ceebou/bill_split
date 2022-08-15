@@ -1,4 +1,4 @@
-import 'package:bill_split/BillsWidget.dart';
+import 'package:bill_split/widgets/BillsWidget.dart';
 import 'package:flutter/material.dart';
 
 
@@ -17,16 +17,17 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Bill Split',
       theme: ThemeData.dark().copyWith(
-        colorScheme: Theme.of(context).colorScheme.copyWith(
-          primary: const Color(0xffffa305),
-          onPrimary: const Color(0xff212121),
-          secondary: const Color(0xff9E9E9E),
-          onSecondary: const Color(0xff757575),
-          tertiary: const Color(0xffBDBDBD),
-          background: const Color(0xff212121),
-        ),
+        colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.amber),
+        // colorScheme: Theme.of(context).colorScheme.copyWith(
+        //   primary: const Color(0xffffa305),
+        //   onPrimary: const Color(0xff212121),
+        //   secondary: const Color(0xff9E9E9E),
+        //   onSecondary: const Color(0xff757575),
+        //   tertiary: const Color(0xffBDBDBD),
+        //   background: const Color(0xff212121),
+        // ),
         floatingActionButtonTheme: Theme.of(context).floatingActionButtonTheme.copyWith(
-          backgroundColor: const Color(0xffffa305),
+          backgroundColor: Colors.amber,
           foregroundColor: const Color(0xff212121),
         ),
         brightness: Brightness.light,

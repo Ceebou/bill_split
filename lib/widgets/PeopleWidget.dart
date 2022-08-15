@@ -1,9 +1,9 @@
 import 'dart:ffi';
 
-import 'package:bill_split/Bill.dart';
-import 'package:bill_split/BillDatabase.dart';
-import 'package:bill_split/Person.dart';
-import 'package:bill_split/ResultWidget.dart';
+import 'package:bill_split/objects/Bill.dart';
+import 'package:bill_split/db/BillDatabase.dart';
+import 'package:bill_split/objects/Person.dart';
+import 'package:bill_split/widgets/ResultWidget.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -66,7 +66,7 @@ class _PeopleWidgetState extends State<PeopleWidget> {
 
   void addMoney(Person person){
     setState((){
-      int toAdd = (double.parse(textEditingController.value.text) * 100).floor();
+      int toAdd = (double.parse(textEditingController.value.text.replaceAll(",", ".")) * 100).floor();
       person.cent += toAdd;
       BillDatabase.billDatabase.updatePerson(person, widget.bill);
     });
@@ -75,6 +75,7 @@ class _PeopleWidgetState extends State<PeopleWidget> {
   }
 
   Future<void> _displayPersonAddMoneyInputDialog(Person person) async {
+    textEditingController.clear();
     return showDialog(
         context: context,
         builder: (context) {
@@ -126,6 +127,7 @@ class _PeopleWidgetState extends State<PeopleWidget> {
       person.name = textEditingController.value.text;
       BillDatabase.billDatabase.updatePerson(person, widget.bill);
     });
+    textEditingController.clear();
     Navigator.pop(context);
   }
 
@@ -134,6 +136,8 @@ class _PeopleWidgetState extends State<PeopleWidget> {
       widget.bill.people.remove(person);
       BillDatabase.billDatabase.removePerson(person);
     });
+    textEditingController.clear();
+    Navigator.pop(context);
   }
 
   @override
@@ -152,6 +156,7 @@ class _PeopleWidgetState extends State<PeopleWidget> {
         ],
       ),
       body: ListView(
+        padding: const EdgeInsets.only(bottom: 70),
         children: widget.bill.people.map((person) => Card(
           child: ListTile(
             title: Row(

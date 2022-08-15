@@ -1,9 +1,9 @@
-import 'package:bill_split/BillDatabase.dart';
-import 'package:bill_split/PeopleWidget.dart';
+import 'package:bill_split/db/BillDatabase.dart';
+import 'package:bill_split/widgets/PeopleWidget.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import 'Bill.dart';
+import '../objects/Bill.dart';
 
 class BillsWidget extends StatefulWidget {
 
@@ -87,7 +87,8 @@ class _BillsWidgetState extends State<BillsWidget> {
         title: const Text("Bills"),
       ),
       body: ListView(
-        children: bills.map((e) =>
+          padding: const EdgeInsets.only(bottom: 70),
+          children: bills.map((e) =>
             Card(
               child: ListTile(
                 title: Text(e.name),
