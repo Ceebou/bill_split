@@ -1,14 +1,30 @@
+import 'dart:io';
+import 'dart:typed_data';
+import 'dart:ui' as ui show Image, ImageByteFormat;
+
 import 'package:bill_split/widgets/SummaryCard.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:path/path.dart';
+import 'package:screenshot/screenshot.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:sqflite/sqflite.dart';
+
 
 import '../objects/Bill.dart';
 import '../objects/Person.dart';
 
 class ResultWidget extends StatelessWidget {
+
+  final ScreenshotController screenshotController = ScreenshotController();
+  final String screenShotFileName = "screenshot.png";
+
+
   final Bill bill;
 
-  const ResultWidget({Key? key, required this.bill}) : super(key: key);
+
+  ResultWidget({Key? key, required this.bill}) : super(key: key);
 
 
   @override
@@ -22,10 +38,36 @@ class ResultWidget extends StatelessWidget {
         ),
         title: const Text("Payout"),
       ),
-      body: ListView(
-        children: getListWidgets(),
+      body: SingleChildScrollView(
+        child: Screenshot(
+          controller: screenshotController,
+          child: ListView(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            padding: const EdgeInsets.only(bottom: 70),
+            children: getListWidgets(),
+          ),
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _handleShareScreenPressed,
+        child: const Icon(Icons.share),
       ),
     );
+  }
+
+  void _handleShareScreenPressed() async {
+    await screenShotList();
+    shareScreenshot();
+  }
+
+  Future<void> screenShotList() async {
+    screenshotController.captureAndSave(await getDatabasesPath(), fileName: screenShotFileName, pixelRatio: 1);
+  }
+
+  void shareScreenshot() async {
+    String path = join(await getDatabasesPath(), screenShotFileName);
+    Share.shareFiles([path], text: "Share Payout");
   }
 
   List<Widget> getListWidgets(){
