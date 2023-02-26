@@ -1,10 +1,13 @@
+import 'package:bill_split/communication/ExchangeApi.dart';
+import 'package:bill_split/objects/Bill.dart';
+import 'package:bill_split/objects/Currency.dart';
 import 'package:flutter/material.dart';
 
 class SummaryCard extends StatelessWidget {
-  final int sum;
-  final String average;
+  final Bill bill;
+  final Currency targetCurrency;
 
-  const SummaryCard({Key? key, required this.sum, required this.average}) : super(key: key);
+  const SummaryCard({Key? key, required this.bill, required this.targetCurrency}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +23,16 @@ class SummaryCard extends StatelessWidget {
               children: [
                 const Text("Sum"),
                 const Spacer(),
-                Text(centToString(sum.toDouble())),
+                FutureBuilder<int>(
+                  future: getSum(),
+                    builder: (BuildContext context, AsyncSnapshot<int> snapshot){
+                      if  (snapshot.hasData){
+                        return Text("${centToString(snapshot.data!)} ${targetCurrency.symbol}");
+                      } else {
+                        return const Text("...");
+                      }
+                    }
+                ),
               ],
             ),
             const SizedBox(height: 2,),
@@ -28,7 +40,16 @@ class SummaryCard extends StatelessWidget {
               children: [
                 const Text("Per Person"),
                 const Spacer(),
-                Text(average),
+                FutureBuilder<int>(
+                    future: getAverage(),
+                    builder: (BuildContext context, AsyncSnapshot<int> snapshot){
+                      if  (snapshot.hasData){
+                        return Text("${centToString(snapshot.data!)} ${targetCurrency.symbol}");
+                      } else {
+                        return const Text("...");
+                      }
+                    }
+                ),
               ],
             )
           ],
@@ -37,7 +58,26 @@ class SummaryCard extends StatelessWidget {
     );
   }
 
-  String centToString(double value){
+  Future<int> getSum(){
+    int sumFromBill = bill.getSum();
+    return exchange(sumFromBill);
+  }
+
+  Future<int> getAverage(){
+    int averageFromBill = bill.getAverage();
+    return exchange(averageFromBill);
+  }
+
+  Future<int> exchange(int value) async {
+    if (bill.currencyCode != targetCurrency.code){
+       return await ExchangeApi().exchangeMoneyFromTo(value, bill.currencyCode, targetCurrency.code);
+    } else {
+      return value;
+    }
+
+  }
+
+  String centToString(int value){
     return (value/100).toStringAsFixed(2);
   }
 }

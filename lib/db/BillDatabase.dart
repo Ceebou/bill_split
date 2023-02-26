@@ -25,7 +25,7 @@ class BillDatabase {
       join(await getDatabasesPath(), 'bill_database.db'),
       onCreate: (db,version) async {
         await db.execute(
-            'CREATE TABLE bills(id INTEGER PRIMARY KEY, name TEXT)'
+            'CREATE TABLE bills(id INTEGER PRIMARY KEY, name TEXT, currencyCode TEXT)'
 
         );
         return db.execute(

@@ -2,6 +2,9 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui show Image, ImageByteFormat;
 
+import 'package:bill_split/objects/Currency.dart';
+import 'package:bill_split/resourceHandlers/CurrenciesSingleton.dart';
+import 'package:bill_split/widgets/CurrencyPicker.dart';
 import 'package:bill_split/widgets/SummaryCard.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -12,24 +15,42 @@ import 'package:share_plus/share_plus.dart';
 import 'package:sqflite/sqflite.dart';
 
 
+import '../communication/ExchangeApi.dart';
 import '../objects/Bill.dart';
 import '../objects/Person.dart';
 
-class ResultWidget extends StatelessWidget {
+class ResultWidget extends StatefulWidget {
+
+  final Bill bill;
+
+  const ResultWidget({Key? key, required this.bill}): super(key: key);
+
+  @override
+  State<StatefulWidget> createState() => _ResultWidgetState();
+
+}
+
+class _ResultWidgetState extends State<ResultWidget> {
 
   final ScreenshotController screenshotController = ScreenshotController();
   final String screenShotFileName = "screenshot.png";
 
 
-  final Bill bill;
+  late Bill bill;
+  late List<PersonPayments> payments;
+  late Currency currency;
 
-
-  ResultWidget({Key? key, required this.bill}) : super(key: key);
+  @override
+  void initState() {
+    super.initState();
+    bill = widget.bill;
+    payments = calculateResult();
+    currency = CurrenciesSingleton().getCurrencyByCode(widget.bill.currencyCode);
+  }
 
 
   @override
   Widget build(BuildContext context) {
-    List<PersonPayments> payments = calculateResult();
     return Scaffold(
       appBar: AppBar(
         leading: TextButton(
@@ -37,6 +58,11 @@ class ResultWidget extends StatelessWidget {
           child: const Icon(Icons.arrow_back, color: Color(0xff212121)),
         ),
         title: const Text("Payout"),
+        actions: [
+          TextButton(
+              onPressed: () => _displayCurrencyExchangeInputDialog(context),
+              child: const Icon(Icons.currency_exchange, color: Color(0xff212121))),
+        ],
       ),
       body: SingleChildScrollView(
         child: Screenshot(
@@ -56,6 +82,72 @@ class ResultWidget extends StatelessWidget {
     );
   }
 
+  Future<void> _displayCurrencyExchangeInputDialog(BuildContext context) async {
+    Currency currentlySelected = currency;
+    return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return StatefulBuilder(
+            builder: (context, setState){
+              return AlertDialog(
+                title: const Text("Exchange"),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CurrencyPicker(
+                        initialValue: currentlySelected.code,
+                        onChanged: (v) {
+                          setState(() {
+                            currentlySelected = v;
+                          });
+                        }
+                    ),
+                    if (bill.currencyCode != currentlySelected.code)
+                      Center(
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(CurrenciesSingleton().getCurrencyByCode(bill.currencyCode).symbol),
+                                const Icon(Icons.arrow_right_alt),
+                                Text(currentlySelected.symbol)
+                              ],
+                            ),
+                            FutureBuilder<double>(
+                                future: ExchangeApi().getExchangeRateFromTo(bill.currencyCode, currentlySelected.code),
+                                builder: (BuildContext context, AsyncSnapshot<double> snapshot){
+                                  if  (snapshot.hasData){
+                                    return Text(snapshot.data!.toStringAsFixed(5));
+                                  } else {
+                                    return const Text("...");
+                                  }
+                                }
+                            ),
+                          ],
+                        ),
+                      )
+                  ],
+                ),
+                actions: [
+                  TextButton(
+                      onPressed: (){
+                        _onExchangeCurrencyChanged(currentlySelected);
+                        Navigator.pop(context);
+                      },
+                      child: const Text("Exchange")),
+                  TextButton(
+                      onPressed: (){
+                        Navigator.pop(context);
+                      },
+                      child: const Text("Close")),
+                ],
+              );
+            },
+          );
+        });
+  }
+
   void _handleShareScreenPressed() async {
     await screenShotList();
     shareScreenshot();
@@ -71,13 +163,13 @@ class ResultWidget extends StatelessWidget {
   }
 
   List<Widget> getListWidgets(){
-    List<Widget> summary = [SummaryCard(sum: bill.getSum(), average: bill.getAverage()), const Divider(thickness: 2, color: Colors.amber,)];
+    List<Widget> summary = [SummaryCard(bill: bill, targetCurrency: currency,), const Divider(thickness: 2, color: Colors.amber,)];
     List<Widget> payments = getPaymentWidgets();
     return summary + payments;
   }
 
   List<Widget> getPaymentWidgets(){
-    List<PersonPayments> payments = calculateResult();
+    List<PersonPayments> payments = this.payments;
     return payments.map((e) => paymentToCard(e)).toList();
   }
 
@@ -96,7 +188,7 @@ class ResultWidget extends StatelessWidget {
                   children: [
                     Text(amount.person.name),
                     const Spacer(),
-                    Align(alignment: Alignment.topRight,child: Text((amount.value / 100).toStringAsFixed(2)),),
+                    Align(alignment: Alignment.topRight,child: Text("${(amount.value / 100).toStringAsFixed(2)} ${currency.symbol}"),),
                   ],
                 )).toList(),
               ),
@@ -150,6 +242,27 @@ class ResultWidget extends StatelessWidget {
       }
     }
     return payments;
+  }
+
+  void _onExchangeCurrencyChanged(Currency selectedCurrency) {
+    if (currency.code != selectedCurrency.code){
+      setState(() {   //maybe set state in recalc
+        _recalculateResult(selectedCurrency);
+        currency = selectedCurrency;
+      });
+    }
+  }
+
+  Future<void> _recalculateResult(Currency selectedCurrency) async {
+    double rate = await ExchangeApi().getExchangeRateFromTo(currency.code, selectedCurrency.code);
+    setState(() {
+      for (PersonPayments payment in payments) {
+        for (TuplePersonValue tuple in payment.amounts){
+          tuple.value = (tuple.value * rate).toPrecision(0);
+        }
+      }
+    });
+
   }
 }
 

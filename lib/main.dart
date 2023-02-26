@@ -1,3 +1,5 @@
+import 'package:bill_split/resourceHandlers/CurrenciesSingleton.dart';
+import 'package:bill_split/resourceHandlers/ExchangeApiKeySingleton.dart';
 import 'package:bill_split/widgets/BillsWidget.dart';
 import 'package:flutter/material.dart';
 
@@ -12,7 +14,8 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-
+    CurrenciesSingleton();
+    ExchangeApiKeySingleton();
 
     return MaterialApp(
       title: 'Bill Split',
